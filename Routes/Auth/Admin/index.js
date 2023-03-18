@@ -37,17 +37,4 @@ Router.post("/admin/login", async (req, res) => {
   }
 });
 
-Router.get("/admin/generateStudentToken", verifyJWT, (req, res) => {
-  const studentToken = randomString.generate({
-    charset: "alphanumeric",
-    length: 16,
-  });
-
-  res.json({
-    id: req.userID,
-    somes: "Stuff",
-    token: studentToken,
-  });
-});
-
 module.exports = Router;
