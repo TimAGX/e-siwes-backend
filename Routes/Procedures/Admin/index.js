@@ -6,7 +6,7 @@ const { signAdminJWT, verifyJWT } = require("../../../Modules/WebTokenAuth");
 
 const Router = express.Router();
 
-Router.get("/admin/generateStudentToken", verifyJWT, (req, res) => {
+Router.get("/admin/student/token/generate", verifyJWT, (req, res) => {
   const studentToken = randomString
     .generate({
       charset: "alphanumeric",
@@ -22,8 +22,6 @@ Router.get("/admin/generateStudentToken", verifyJWT, (req, res) => {
   token.save().then(() => {
     console.log("Token successfully saved!");
     res.json({
-      id: req.userID,
-      somes: "Stuff",
       token: studentToken,
     });
   });
@@ -31,7 +29,13 @@ Router.get("/admin/generateStudentToken", verifyJWT, (req, res) => {
 Router.get("/admin/students", verifyJWT, (req, res) => {
   Student.find().then((students) => {
     console.log(students);
+    res.json({
+      students,
+    });
   });
 });
 
+Router.get("/admin/student/:studentID", verifyJWT, (req, res) => {
+  console.log(req.params.studentID);
+});
 module.exports = Router;
