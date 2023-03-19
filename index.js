@@ -13,10 +13,7 @@ app.use(
   })
 );
 app.use(bodyParser.json());
-
-app.use(require("./Routes/Auth/Admin/index"));
-app.use(require("./Routes/Procedures/Admin/index"));
-require("./Modules/WebTokenAuth.js");
+app.use(require("./requirements"));
 
 app.get("/", (req, res) => {
   res.json({

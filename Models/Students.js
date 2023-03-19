@@ -6,6 +6,7 @@ const studentSchema = new Schema({
   firstName: String,
   lastName: String,
   email: String,
+  password: String,
   phone: String,
   supervisor: String,
   bankAccount: {
@@ -13,6 +14,7 @@ const studentSchema = new Schema({
     number: Number,
     sortCode: Number,
   },
+  isProfileComplete: Boolean,
 });
 
 const Student = model("Student", studentSchema);

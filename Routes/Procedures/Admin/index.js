@@ -35,7 +35,4 @@ Router.get("/admin/students", verifyJWT, (req, res) => {
   });
 });
 
-Router.get("/admin/student/:studentID", verifyJWT, (req, res) => {
-  console.log(req.params.studentID);
-});
 module.exports = Router;
