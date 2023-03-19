@@ -1,5 +1,6 @@
 const express = require("express");
 const randomString = require("randomstring");
+const Student = require("../../../Models/Students");
 const Token = require("../../../Models/Tokens");
 const { signAdminJWT, verifyJWT } = require("../../../Modules/WebTokenAuth");
 
@@ -25,6 +26,11 @@ Router.get("/admin/generateStudentToken", verifyJWT, (req, res) => {
       somes: "Stuff",
       token: studentToken,
     });
+  });
+});
+Router.get("/admin/students", verifyJWT, (req, res) => {
+  Student.find().then((students) => {
+    console.log(students);
   });
 });
 
