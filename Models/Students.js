@@ -8,13 +8,23 @@ const studentSchema = new Schema({
   email: String,
   password: String,
   phone: String,
+  matricNumber: String,
   supervisor: String,
   bankAccount: {
     name: String,
-    number: Number,
-    sortCode: Number,
+    number: String,
+    sortCode: String,
+    masterListNumber: String,
+  },
+  yearOfStudy: String,
+  courseOfStudy: String,
+  attachmentPeriod: String,
+  company: {
+    name: String,
+    address: String,
   },
   isProfileComplete: Boolean,
+  hasPaid: Boolean,
 });
 
 const Student = model("Student", studentSchema);

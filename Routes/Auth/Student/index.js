@@ -76,6 +76,7 @@ Router.post("/student/register", async (req, res) => {
         firstName,
         lastName,
         isProfileComplete: false,
+        hasPaid: false,
       });
 
       student.save().then(() => {
@@ -128,6 +129,81 @@ Router.get("/student/profile/:studentID", verifyJWT, async (req, res) => {
       auth: true,
       student,
     });
+  }
+});
+
+Router.post("/student/profile/update", verifyJWT, async (req, res) => {
+  const studentID = req.userID;
+  const { email, firstName, lastName, phone, matricNumber } = req.body;
+  if (!email || !firstName || !lastName || !phone || !matricNumber) {
+    res.json({
+      auth: false,
+      message: "Pleae fill out all fields",
+    });
+  } else {
+    Student.updateOne(
+      { id: studentID },
+      {
+        $set: {
+          email,
+          firstName,
+          lastName,
+          phone,
+          matricNumber,
+        },
+      }
+    ).then(() => {
+      res.json({
+        auth: true,
+      });
+    });
+  }
+});
+
+Router.post("/student/password/validate", verifyJWT, async (req, res) => {
+  const studentID = req.userID;
+  const { password } = req.body;
+
+  if (!password) {
+    res.json({
+      auth: false,
+      message: "Password is not present",
+    });
+  } else {
+    const student = await Student.findOne({ id: studentID });
+    const { password: studentPassword } = student;
+
+    const isPasswordValid = await bcrypt.compare(password, studentPassword);
+
+    res.json({
+      auth: isPasswordValid,
+      message: isPasswordValid ? "Password is correct!" : "Incorrect password",
+    });
+  }
+});
+
+Router.post("/student/password/update", verifyJWT, async (req, res) => {
+  const { password: newPassword } = req.body;
+  if (!newPassword) {
+    res.json({
+      auth: false,
+      message: "Password is not present",
+    });
+  } else {
+    const studentID = req.userID;
+    const password = await CreateEncryptedPassword(newPassword);
+    Student.updateOne({ id: studentID }, { $set: { password } })
+      .then(() => {
+        res.json({
+          auth: true,
+        });
+      })
+      .catch(() => {
+        res.json({
+          auth: false,
+          message: "An error occured",
+        });
+      });
   }
 });
 module.exports = Router;
