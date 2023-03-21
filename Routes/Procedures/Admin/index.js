@@ -86,13 +86,18 @@ Router.post("/admin/supervisor/student/assign", verifyJWT, async (req, res) => {
     const { students } = supervisor;
 
     const AddStudent = () => {
-      Supervisor.updateOne(
-        { id: supervisorID },
-        { $push: { students: { studentID: studentID } } }
+      Student.updateOne(
+        { id: studentID },
+        { $set: { supervisor: supervisorID } }
       ).then(() => {
-        res.json({
-          auth: true,
-          message: "Student assigned to supervisor",
+        Supervisor.updateOne(
+          { id: supervisorID },
+          { $push: { students: { studentID: studentID } } }
+        ).then(() => {
+          res.json({
+            auth: true,
+            message: "Student assigned to supervisor",
+          });
         });
       });
     };
@@ -130,6 +135,7 @@ Router.post("/admin/supervisor/student/remove", verifyJWT, async (req, res) => {
       { id: supervisorID },
       { $pull: { students: { studentID } } }
     ).then(() => {
+      Student.updateOne({ id: studentID }, { $set: { supervisor: "" } });
       res.json({
         auth: true,
         message: "Student successfully removed!",
