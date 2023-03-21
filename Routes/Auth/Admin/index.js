@@ -115,4 +115,20 @@ Router.post("/admin/password/update", verifyJWT, async (req, res) => {
     }
   }
 });
+
+Router.get("/admin/token/validate", verifyJWT, async (req, res) => {
+  const adminID = req.userID;
+  const admin = Admin.findOne({ id: adminID });
+  if (admin === null) {
+    res.json({
+      auth: false,
+      message: "Admin is not authorized",
+    });
+  } else {
+    res.json({
+      auth: true,
+      message: "Admin authentication successful!",
+    });
+  }
+});
 module.exports = Router;
