@@ -44,17 +44,25 @@ Router.post("/student/token/validate", async (req, res) => {
 });
 
 Router.post("/student/register", async (req, res) => {
-  const { email, password, token, firstName, lastName } = req.body;
-  if (!email || !password || !token || !firstName || !lastName) {
+  const { email, password, token, firstName, lastName, matricNumber } =
+    req.body;
+  if (
+    !email ||
+    !password ||
+    !token ||
+    !firstName ||
+    !lastName ||
+    !matricNumber
+  ) {
     res.json({
       auth: false,
       message: "Please fill all fields!",
     });
   } else {
     // Check if email already exists
-    const existingStudent = await Student.findOne({ email });
+    const existingStudent = await Student.findOne({ matricNumber });
     if (existingStudent !== null) {
-      // Student with email already exists
+      // Student with matric already exists
       res.json({
         auth: false,
         message: "Student already exists",
@@ -72,6 +80,7 @@ Router.post("/student/register", async (req, res) => {
       const student = new Student({
         id: studentID,
         email,
+        matricNumber,
         password: encryptedPassword,
         firstName,
         lastName,
