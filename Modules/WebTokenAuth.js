@@ -14,6 +14,12 @@ const signStudentJWT = (userID) => {
   });
   return token;
 };
+const signSupervisorJWT = (userID) => {
+  const token = jwt.sign({ userID }, jwtSecret, {
+    expiresIn: "3d",
+  });
+  return token;
+};
 
 const verifyJWT = (req, res, next) => {
   const token = req.headers["x-access-token"];
@@ -44,4 +50,5 @@ module.exports = {
   verifyJWT,
   signAdminJWT,
   signStudentJWT,
+  signSupervisorJWT,
 };

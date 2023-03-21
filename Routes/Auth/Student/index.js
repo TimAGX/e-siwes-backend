@@ -14,13 +14,13 @@ const Router = express.Router();
 
 Router.post("/student/token/validate", async (req, res) => {
   const { token: studentToken } = req.body;
-  const token = await Token.findOne({ token: studentToken });
   if (!studentToken) {
     res.json({
       auth: false,
       message: "Token is not present",
     });
   } else {
+    const token = await Token.findOne({ token: studentToken });
     if (token === null) {
       res.json({
         auth: false,
@@ -36,7 +36,7 @@ Router.post("/student/token/validate", async (req, res) => {
       } else {
         res.json({
           auth: true,
-          token,
+          data: token,
         });
       }
     }
@@ -80,6 +80,7 @@ Router.post("/student/register", async (req, res) => {
       });
 
       student.save().then(() => {
+        Token.updateOne({ token }, { $set: { valid: false } });
         res.json({
           auth: true,
           message: "Student created successfully!",
@@ -110,7 +111,7 @@ Router.post("/student/login", async (req, res) => {
       res.json({
         auth: isPasswordValid,
         message: isPasswordValid ? "Login successful" : "Incorrect Password",
-        token: isPasswordValid ? token : null,
+        data: isPasswordValid ? token : null,
       });
     }
   }
@@ -127,7 +128,7 @@ Router.get("/student/profile/:studentID", verifyJWT, async (req, res) => {
   } else {
     res.json({
       auth: true,
-      student,
+      data: student,
     });
   }
 });

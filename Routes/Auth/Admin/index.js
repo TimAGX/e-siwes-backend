@@ -34,7 +34,7 @@ Router.post("/admin/login", async (req, res) => {
       res.json({
         auth: isPasswordValid,
         message: isPasswordValid ? "Correct Auth Details" : "Invalid Password",
-        token: isPasswordValid ? token : undefined,
+        data: isPasswordValid ? token : undefined,
       });
     } else {
       res.json({

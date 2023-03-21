@@ -44,7 +44,7 @@ Router.get("/student/receipts", verifyJWT, async (req, res) => {
   const AllStudentReceipts = await Receipt.find({ studentID });
   res.json({
     auth: true,
-    receipts: AllStudentReceipts,
+    data: AllStudentReceipts,
   });
 });
 module.exports = Router;
