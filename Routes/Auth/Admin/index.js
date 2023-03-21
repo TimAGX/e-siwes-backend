@@ -6,6 +6,7 @@ const bcrypt = require("bcrypt");
 const randomString = require("randomstring");
 const { signAdminJWT, verifyJWT } = require("../../../Modules/WebTokenAuth");
 const Admin = require("../../../Models/Admins");
+const { CreateEncryptedPassword } = require("../../../Modules/AuthModule");
 
 const Router = express.Router();
 
@@ -30,7 +31,7 @@ Router.post("/admin/login", async (req, res) => {
         AdminData.password
       );
 
-      const token = signAdminJWT(AdminData.email);
+      const token = signAdminJWT(AdminData.id);
       res.json({
         auth: isPasswordValid,
         message: isPasswordValid ? "Correct Auth Details" : "Invalid Password",
@@ -81,6 +82,37 @@ Router.post("/admin/password/validate", verifyJWT, async (req, res) => {
     res.json({
       auth: isPasswordValid,
     });
+  }
+});
+
+Router.post("/admin/password/update", verifyJWT, async (req, res) => {
+  const adminID = req.userID;
+  console.log(adminID);
+  const admin = await Admin.findOne({ id: adminID });
+  if (admin === null) {
+    res.json({
+      auth: false,
+      message: "Priviledge not granted to user",
+    });
+  } else {
+    const { password: newPassword } = req.body;
+    if (!newPassword) {
+      res.json({
+        auth: false,
+        message: "Password cannot be blank",
+      });
+    } else {
+      const encryptedPassword = await CreateEncryptedPassword(newPassword);
+      Admin.updateOne(
+        { id: adminID },
+        { $set: { password: encryptedPassword } }
+      ).then(() => {
+        res.json({
+          auth: true,
+          message: "Password successfully updated!",
+        });
+      });
+    }
   }
 });
 module.exports = Router;
