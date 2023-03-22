@@ -86,6 +86,17 @@ Router.post("/student/register", async (req, res) => {
         lastName,
         isProfileComplete: false,
         hasPaid: false,
+        bankAccount: {
+          number: "",
+          sortCode: "",
+          masterListNumber: "",
+          name: "",
+        },
+        company: {
+          name: "",
+          address: "",
+        },
+        courseOfStudy: "",
       });
 
       student.save().then(() => {
