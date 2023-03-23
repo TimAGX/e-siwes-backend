@@ -143,4 +143,38 @@ Router.post("/admin/supervisor/student/remove", verifyJWT, async (req, res) => {
     });
   }
 });
+
+Router.post("/admin/student/notification/send", verifyJWT, async (req, res) => {
+  const { title, body } = req.body;
+  if (!title || !body) {
+    res.json({
+      auth: false,
+      message: "Please provide both title and body!",
+    });
+  } else {
+    const notificationID = randomString.generate({
+      charset: "alphanumeric",
+      length: 20,
+    });
+    Student.updateMany(
+      {},
+      {
+        $push: {
+          notifications: {
+            isOpen: true,
+            title,
+            body,
+            id: notificationID.toUpperCase(),
+          },
+        },
+      }
+    ).then(() => {
+      res.json({
+        auth: true,
+        message: "Notification sent to student!",
+      });
+    });
+  }
+});
+
 module.exports = Router;

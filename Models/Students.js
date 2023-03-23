@@ -25,6 +25,7 @@ const studentSchema = new Schema({
   },
   isProfileComplete: Boolean,
   hasPaid: Boolean,
+  notifications: [{ isOpen: Boolean, title: String, body: String, id: String }],
 });
 
 const Student = model("Student", studentSchema);
