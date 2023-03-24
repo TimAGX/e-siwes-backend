@@ -60,9 +60,9 @@ Router.post("/student/register", async (req, res) => {
     });
   } else {
     // Check if email already exists
-    const existingStudent = await Student.findOne({ matricNumber });
+    const existingStudent = await Student.findOne({ matricNumber, email });
     if (existingStudent !== null) {
-      // Student with matric already exists
+      // Student with matric or email already exists
       res.json({
         auth: false,
         message: "Student already exists",
@@ -71,41 +71,59 @@ Router.post("/student/register", async (req, res) => {
       // Create Password hash for student
       const encryptedPassword = await CreateEncryptedPassword(password);
 
-      console.log("The password", encryptedPassword);
       // Create new student
       const studentID = randomString.generate({
         charset: "alphanumeric",
         length: 24,
       });
-      const student = new Student({
-        id: studentID,
-        email,
-        matricNumber,
-        password: encryptedPassword,
-        firstName,
-        lastName,
-        isProfileComplete: false,
-        hasPaid: false,
-        bankAccount: {
-          number: "",
-          sortCode: "",
-          masterListNumber: "",
-          name: "",
-        },
-        company: {
-          name: "",
-          address: "",
-        },
-        courseOfStudy: "",
-      });
-
-      student.save().then(() => {
-        Token.updateOne({ token }, { $set: { valid: false } });
+      const tokenInDB = await Token.findOne({ token });
+      // Check if token is in DB
+      if (tokenInDB === null) {
         res.json({
-          auth: true,
-          message: "Student created successfully!",
+          auth: false,
+          message: "Student Token is not valid",
         });
-      });
+      } else {
+        // Check if token is valid
+        if (tokenInDB.valid) {
+          const student = new Student({
+            id: studentID,
+            email,
+            matricNumber,
+            password: encryptedPassword,
+            firstName,
+            lastName,
+            isProfileComplete: false,
+            hasPaid: false,
+            bankAccount: {
+              number: "",
+              sortCode: "",
+              masterListNumber: "",
+              name: "",
+            },
+            company: {
+              name: "",
+              address: "",
+            },
+            courseOfStudy: "",
+          });
+
+          student.save().then(() => {
+            Token.updateOne({ token }, { $set: { valid: false } }).then(() => {
+              res.json({
+                auth: true,
+                message: "Student created successfully!",
+              });
+            });
+          });
+        } else {
+          // Token is in DB but is not valid
+          res.json({
+            auth: false,
+            message: "Token is expired",
+          });
+        }
+      }
     }
   }
 });

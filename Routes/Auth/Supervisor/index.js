@@ -74,6 +74,7 @@ Router.post("/supervisor/register", async (req, res) => {
         firstName,
         lastName,
         email,
+        phone: "",
         password: encryptedPassword,
         isProfileComplete: false,
       });
