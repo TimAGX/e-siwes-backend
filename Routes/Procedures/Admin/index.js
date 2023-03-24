@@ -46,7 +46,8 @@ Router.get("/admin/supervisor/key/generate", verifyJWT, (req, res) => {
     console.log("Supervisor key successfully saved!");
     res.json({
       auth: true,
-      data: key,
+      data: supervisorKey,
+      message: "Key generated and saved!",
     });
   });
 });

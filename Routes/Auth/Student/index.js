@@ -60,7 +60,9 @@ Router.post("/student/register", async (req, res) => {
     });
   } else {
     // Check if email already exists
-    const existingStudent = await Student.findOne({ matricNumber, email });
+    const existingStudent = await Student.findOne({
+      $or: [{ email }, { matricNumber }],
+    });
     if (existingStudent !== null) {
       // Student with matric or email already exists
       res.json({
@@ -88,24 +90,29 @@ Router.post("/student/register", async (req, res) => {
         if (tokenInDB.valid) {
           const student = new Student({
             id: studentID,
-            email,
-            matricNumber,
-            password: encryptedPassword,
             firstName,
             lastName,
-            isProfileComplete: false,
-            hasPaid: false,
+            email,
+            password: encryptedPassword,
+            phone: "",
+            matricNumber,
+            supervisor: "",
             bankAccount: {
               number: "",
               sortCode: "",
               masterListNumber: "",
               name: "",
             },
+            yearOfStudy: "",
+            courseOfStudy: "",
+            attachmentPeriod: "",
             company: {
               name: "",
               address: "",
             },
-            courseOfStudy: "",
+            isProfileComplete: false,
+            hasPaid: false,
+            notifications: [],
           });
 
           student.save().then(() => {
