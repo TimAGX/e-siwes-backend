@@ -52,39 +52,55 @@ Router.post("/supervisor/register", async (req, res) => {
       message: "Please fill all fields!",
     });
   } else {
-    // Check if email already exists
-    const existingSupervisor = await Supervisor.findOne({ email });
-    if (existingSupervisor !== null) {
-      // Supervisor with email already exists
+    // Check if supervisor key is valid
+    const findKey = await Key.findOne({ key });
+    if (findKey !== null) {
+      if (findKey.valid) {
+        // Check if email already exists
+        const existingSupervisor = await Supervisor.findOne({ email });
+        if (existingSupervisor !== null) {
+          // Supervisor with email already exists
+          res.json({
+            auth: false,
+            message: "Supervisor already exists",
+          });
+        } else {
+          // Create Password hash for supervisoru
+          const encryptedPassword = await CreateEncryptedPassword(password);
+
+          // Create new supervisoru
+          const supervisorID = randomString.generate({
+            charset: "alphanumeric",
+            length: 24,
+          });
+          const supervisor = new Supervisor({
+            id: supervisorID,
+            firstName,
+            lastName,
+            email,
+            phone: "",
+            password: encryptedPassword,
+            isProfileComplete: false,
+          });
+
+          supervisor.save().then(() => {
+            Key.updateOne({ key }, { $set: { valid: false } });
+            res.json({
+              auth: true,
+              message: "Supervisor created successfully!",
+            });
+          });
+        }
+      } else {
+        res.json({
+          auth: false,
+          message: "Supervisor key is not valid",
+        });
+      }
+    } else {
       res.json({
         auth: false,
-        message: "Student already exists",
-      });
-    } else {
-      // Create Password hash for supervisoru
-      const encryptedPassword = await CreateEncryptedPassword(password);
-
-      // Create new supervisoru
-      const supervisorID = randomString.generate({
-        charset: "alphanumeric",
-        length: 24,
-      });
-      const supervisor = new Supervisor({
-        id: supervisorID,
-        firstName,
-        lastName,
-        email,
-        phone: "",
-        password: encryptedPassword,
-        isProfileComplete: false,
-      });
-
-      supervisor.save().then(() => {
-        Key.updateOne({ key }, { $set: { valid: false } });
-        res.json({
-          auth: true,
-          message: "Supervisor created successfully!",
-        });
+        message: "Supervisor key is not valid",
       });
     }
   }

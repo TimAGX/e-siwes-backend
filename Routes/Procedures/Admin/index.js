@@ -92,21 +92,25 @@ Router.post("/admin/supervisor/student/assign", verifyJWT, async (req, res) => {
       const { students } = supervisor;
 
       const AddStudent = () => {
-        Student.updateOne(
-          { id: studentID },
-          { $set: { supervisor: supervisorID } }
-        ).then(() => {
-          Supervisor.updateOne(
-            { id: supervisorID },
-            { $push: { students: { studentID: studentID } } }
-          ).then(() => {
-            res.json({
-              auth: true,
-              message: "Student assigned to supervisor",
-              data: null,
+        Supervisor.updateMany({}, { $pull: { students: { studentID } } }).then(
+          () => {
+            Student.updateOne(
+              { id: studentID },
+              { $set: { supervisor: supervisorID } }
+            ).then(() => {
+              Supervisor.updateOne(
+                { id: supervisorID },
+                { $push: { students: { studentID: studentID } } }
+              ).then(() => {
+                res.json({
+                  auth: true,
+                  message: "Student assigned to supervisor",
+                  data: null,
+                });
+              });
             });
-          });
-        });
+          }
+        );
       };
       if (!students) {
         // Supervisor has no students so add student
