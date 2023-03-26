@@ -24,23 +24,32 @@ Router.post("/admin/login", async (req, res) => {
       message: "Please provide email and password!",
     });
   } else {
-    const AdminData = await Admin.findOne();
-    if (email === AdminData.email) {
-      const isPasswordValid = await bcrypt.compare(
-        password,
-        AdminData.password
-      );
+    const AdminData = await Admin.findOne({});
+    if (AdminData !== null) {
+      if (email === AdminData.email) {
+        const isPasswordValid = await bcrypt.compare(
+          password,
+          AdminData.password
+        );
 
-      const token = signAdminJWT(AdminData.id);
-      res.json({
-        auth: isPasswordValid,
-        message: isPasswordValid ? "Correct Auth Details" : "Invalid Password",
-        data: isPasswordValid ? token : undefined,
-      });
+        const token = signAdminJWT(AdminData.id);
+        res.json({
+          auth: isPasswordValid,
+          message: isPasswordValid
+            ? "Correct Auth Details"
+            : "Invalid Password",
+          data: isPasswordValid ? token : undefined,
+        });
+      } else {
+        res.json({
+          auth: false,
+          message: "Invalid Email Address",
+        });
+      }
     } else {
       res.json({
         auth: false,
-        message: "Invalid Email Address",
+        message: "No admin found!",
       });
     }
   }
