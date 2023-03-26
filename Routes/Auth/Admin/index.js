@@ -24,7 +24,8 @@ Router.post("/admin/login", async (req, res) => {
       message: "Please provide email and password!",
     });
   } else {
-    const AdminData = await Admin.findOne({});
+    const AdminData = await Admin.find({});
+    console.log("The Admin Data: ", AdminData);
     if (AdminData !== null) {
       if (email === AdminData.email) {
         const isPasswordValid = await bcrypt.compare(
