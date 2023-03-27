@@ -49,8 +49,9 @@ Router.post("/admin/login", async (req, res) => {
 });
 
 Router.get("/admin/profile", verifyJWT, (req, res) => {
-  Admin.find({}).then((admin) => {
+  Admin.findOne({}).then((admin) => {
     res.json({
+      auth: !(admin === null),
       admin,
     });
   });
