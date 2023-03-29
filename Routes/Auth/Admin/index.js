@@ -7,6 +7,7 @@ const randomString = require("randomstring");
 const { signAdminJWT, verifyJWT } = require("../../../Modules/WebTokenAuth");
 const Admin = require("../../../Models/Admins");
 const { CreateEncryptedPassword } = require("../../../Modules/AuthModule");
+const Reset = require("../../../Models/Resets");
 
 const Router = express.Router();
 
@@ -131,6 +132,32 @@ Router.get("/admin/token/validate", verifyJWT, async (req, res) => {
     res.json({
       auth: true,
       message: "Admin authentication successful!",
+    });
+  }
+});
+Router.post("/reset/generate", verifyJWT, async (req, res) => {
+  const { type, email } = req.body;
+  if (!type || !email) {
+    res.json({
+      auth: false,
+      message: "User type and email must be specified",
+    });
+  } else {
+    const randomCode = randomString.generate({
+      charset: "alphabetic",
+      length: 6,
+    });
+    const reset = new Reset({
+      code: randomCode.toUpperCase(),
+      type,
+      email,
+      isValid: true,
+    });
+    reset.save().then(() => {
+      res.json({
+        auth: true,
+        message: `Reset code generated for ${email}`,
+      });
     });
   }
 });
