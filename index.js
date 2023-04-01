@@ -30,7 +30,6 @@ app.get("/", (req, res) => {
     server: true,
   });
 });
-
 mongoose.connect(DBURI).then((res) => {
   console.log("Connected: ", true);
   app.listen(PORT, () => console.log(`Server started on ${PORT}`));
