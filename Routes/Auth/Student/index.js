@@ -142,7 +142,9 @@ Router.post("/student/login", async (req, res) => {
       message: "Please enter email and password",
     });
   } else {
-    const student = await Student.findOne({ email });
+    const student = await Student.findOne({
+      $or: [{ email }, { matricNumber }],
+    });
     if (student === null) {
       res.json({
         auth: false,

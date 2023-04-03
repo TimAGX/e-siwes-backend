@@ -126,7 +126,7 @@ Router.post("/admin/supervisor/student/assign", verifyJWT, async (req, res) => {
           // Student HAS ALREADY been assigned
           res.json({
             auth: false,
-            message: "Student already Exists",
+            message: "Student has already been assigned here!",
           });
         }
       }
