@@ -117,9 +117,11 @@ Router.post("/student/register", async (req, res) => {
 
           student.save().then(() => {
             Token.updateOne({ token }, { $set: { valid: false } }).then(() => {
+              const JWT_Token = signStudentJWT(studentID);
               res.json({
                 auth: true,
                 message: "Student created successfully!",
+                data: JWT_Token,
               });
             });
           });
@@ -143,7 +145,7 @@ Router.post("/student/login", async (req, res) => {
     });
   } else {
     const student = await Student.findOne({
-      $or: [{ email }, { matricNumber }],
+      $or: [{ email }, { matricNumber: email }],
     });
     if (student === null) {
       res.json({
@@ -166,17 +168,34 @@ Router.post("/student/login", async (req, res) => {
 
 Router.get("/student/profile/:studentID", verifyJWT, async (req, res) => {
   const { studentID } = req.params;
-  const student = await Student.findOne({ id: studentID });
-  if (student === null) {
-    res.json({
-      auth: false,
-      message: "Student does not exist",
-    });
+  if (studentID === "currentIsStudent") {
+    // Recipient is not an Admin innit
+    const ID = req.userID;
+    const student = await Student.findOne({ id: ID });
+    if (student === null) {
+      res.json({
+        auth: false,
+        message: "Student does not exist",
+      });
+    } else {
+      res.json({
+        auth: true,
+        data: student,
+      });
+    }
   } else {
-    res.json({
-      auth: true,
-      data: student,
-    });
+    const student = await Student.findOne({ id: studentID });
+    if (student === null) {
+      res.json({
+        auth: false,
+        message: "Student does not exist",
+      });
+    } else {
+      res.json({
+        auth: true,
+        data: student,
+      });
+    }
   }
 });
 
