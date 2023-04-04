@@ -9,6 +9,8 @@ const studentSchema = new Schema({
   password: String,
   phone: String,
   matricNumber: String,
+  yearOfStudy: String,
+  courseOfStudy: String,
   supervisor: String,
   bankAccount: {
     name: String,
@@ -16,8 +18,6 @@ const studentSchema = new Schema({
     sortCode: String,
     masterListNumber: String,
   },
-  yearOfStudy: String,
-  courseOfStudy: String,
   attachmentPeriod: String,
   company: {
     name: String,

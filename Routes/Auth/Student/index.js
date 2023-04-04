@@ -199,10 +199,26 @@ Router.get("/student/profile/:studentID", verifyJWT, async (req, res) => {
   }
 });
 
-Router.post("/student/profile/update", verifyJWT, async (req, res) => {
+Router.post("/student/basic/profile/update", verifyJWT, async (req, res) => {
   const studentID = req.userID;
-  const { email, firstName, lastName, phone, matricNumber } = req.body;
-  if (!email || !firstName || !lastName || !phone || !matricNumber) {
+  const {
+    email,
+    firstName,
+    lastName,
+    phone,
+    matricNumber,
+    courseOfStudy,
+    yearOfStudy,
+  } = req.body;
+  if (
+    !email ||
+    !firstName ||
+    !lastName ||
+    !phone ||
+    !matricNumber ||
+    !courseOfStudy ||
+    !yearOfStudy
+  ) {
     res.json({
       auth: false,
       message: "Pleae fill out all fields",
@@ -217,6 +233,57 @@ Router.post("/student/profile/update", verifyJWT, async (req, res) => {
           lastName,
           phone,
           matricNumber,
+          yearOfStudy,
+          courseOfStudy,
+        },
+      }
+    ).then(() => {
+      res.json({
+        auth: true,
+      });
+    });
+  }
+});
+Router.post("/student/advanced/profile/update", verifyJWT, async (req, res) => {
+  const studentID = req.userID;
+  const {
+    bankAccountName,
+    bankAccountNumber,
+    sortCode,
+    masterListNumber,
+    attachmentPeriod,
+    companyName,
+    companyAddress,
+  } = req.body;
+  if (
+    !bankAccountName ||
+    !bankAccountNumber ||
+    !sortCode ||
+    !masterListNumber ||
+    !attachmentPeriod ||
+    !companyName ||
+    !companyAddres
+  ) {
+    res.json({
+      auth: false,
+      message: "Pleae fill out all fields",
+    });
+  } else {
+    Student.updateOne(
+      { id: studentID },
+      {
+        $set: {
+          bankAccount: {
+            name: bankAccountName,
+            number: bankAccountNumber,
+            sortCode,
+            masterListNumber,
+          },
+          attachmentPeriod,
+          company: {
+            name: companyName,
+            address: companyAddress,
+          },
         },
       }
     ).then(() => {

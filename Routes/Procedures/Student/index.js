@@ -7,35 +7,21 @@ const { signAdminJWT, verifyJWT } = require("../../../Modules/WebTokenAuth");
 
 const Router = express.Router();
 
-Router.post("/student/update/details", verifyJWT, async (req, res) => {
-  const studentID = req.userID;
-  const { bankAccount, yearOfStudy, courseOfStudy, attachmentPeriod, company } =
-    req.body;
-
-  Student.updateOne(
-    { id: studentID },
-    {
-      $set: {
-        bankAccount: {
-          name: bankAccount.name,
-          number: bankAccount.number,
-          sortCode: bankAccount.sortCode,
-        },
-        yearOfStudy,
-        courseOfStudy,
-        attachmentPeriod,
-        company: {
-          name: company.name,
-          address: company.address,
-        },
-      },
-    }
-  ).then(() => {
+Router.post("/student/check/matric", verifyJWT, async (req, res) => {
+  const { matricNumber } = req.body;
+  if (!matricNumber) {
+    res.json({
+      auth: false,
+      message: "Please provide a matric number",
+    });
+  } else {
+    // If Data is null, then no student exists with Matric Number
+    const student = await Student.findOne({ matricNumber });
     res.json({
       auth: true,
-      message: "Updated successfully!",
+      data: student,
     });
-  });
+  }
 });
 
 Router.get("/student/receipts", verifyJWT, async (req, res) => {
