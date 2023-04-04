@@ -116,7 +116,12 @@ Router.post("/reset/verify", verifyJWT, async (req, res) => {
       message: "Provide code, email and type",
     });
   } else {
-    const resetObj = await Reset.findOne({ type, email, code, isValid: true });
+    const resetObj = await Reset.findOne({
+      type,
+      email,
+      code: code.toUpperCase(),
+      isValid: true,
+    });
     if (resetObj === null) {
       res.json({
         auth: false,
