@@ -44,7 +44,7 @@ Router.post("/student/token/validate", async (req, res) => {
 });
 
 Router.post("/student/register", async (req, res) => {
-  const { email, password, token, firstName, lastName, matricNumber } =
+  const { email, password, token, firstName, lastName, matricNumber, phone } =
     req.body;
   if (
     !email ||
@@ -52,6 +52,7 @@ Router.post("/student/register", async (req, res) => {
     !token ||
     !firstName ||
     !lastName ||
+    !phone ||
     !matricNumber
   ) {
     res.json({
@@ -94,7 +95,7 @@ Router.post("/student/register", async (req, res) => {
             lastName,
             email,
             password: encryptedPassword,
-            phone: "",
+            phone,
             matricNumber,
             supervisor: "",
             bankAccount: {
@@ -104,6 +105,7 @@ Router.post("/student/register", async (req, res) => {
               name: "",
             },
             yearOfStudy: "",
+            level: "",
             courseOfStudy: "",
             attachmentPeriod: "",
             company: {
@@ -201,24 +203,8 @@ Router.get("/student/profile/:studentID", verifyJWT, async (req, res) => {
 
 Router.post("/student/basic/profile/update", verifyJWT, async (req, res) => {
   const studentID = req.userID;
-  const {
-    email,
-    firstName,
-    lastName,
-    phone,
-    courseOfStudy,
-    yearOfStudy,
-    level,
-  } = req.body;
-  if (
-    !email ||
-    !firstName ||
-    !lastName ||
-    !phone ||
-    !courseOfStudy ||
-    !yearOfStudy ||
-    !level
-  ) {
+  const { email, firstName, lastName, phone, courseOfStudy, level } = req.body;
+  if (!email || !firstName || !lastName || !phone || !courseOfStudy || !level) {
     res.json({
       auth: false,
       message: "Pleazzze fill out all fields",
@@ -232,9 +218,9 @@ Router.post("/student/basic/profile/update", verifyJWT, async (req, res) => {
           firstName,
           lastName,
           phone,
-          yearOfStudy,
           level,
           courseOfStudy,
+          isProfileComplete: true,
         },
       }
     ).then(() => {
