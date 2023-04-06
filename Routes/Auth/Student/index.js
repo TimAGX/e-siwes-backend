@@ -206,22 +206,22 @@ Router.post("/student/basic/profile/update", verifyJWT, async (req, res) => {
     firstName,
     lastName,
     phone,
-    matricNumber,
     courseOfStudy,
     yearOfStudy,
+    level,
   } = req.body;
   if (
     !email ||
     !firstName ||
     !lastName ||
     !phone ||
-    !matricNumber ||
     !courseOfStudy ||
-    !yearOfStudy
+    !yearOfStudy ||
+    !level
   ) {
     res.json({
       auth: false,
-      message: "Pleae fill out all fields",
+      message: "Pleazzze fill out all fields",
     });
   } else {
     Student.updateOne(
@@ -232,8 +232,8 @@ Router.post("/student/basic/profile/update", verifyJWT, async (req, res) => {
           firstName,
           lastName,
           phone,
-          matricNumber,
           yearOfStudy,
+          level,
           courseOfStudy,
         },
       }
