@@ -8,26 +8,35 @@ const { signAdminJWT, verifyJWT } = require("../../../Modules/WebTokenAuth");
 
 const Router = express.Router();
 
-Router.get("/admin/student/token/generate", verifyJWT, (req, res) => {
-  const studentToken = randomString
-    .generate({
-      charset: "alphanumeric",
-      length: 16,
-    })
-    .toUpperCase();
-
-  const token = new Token({
-    id: studentToken,
-    token: studentToken,
-    valid: true,
-  });
-  token.save().then(() => {
-    console.log("Token successfully saved!");
+Router.post("/admin/student/token/generate", verifyJWT, (req, res) => {
+  const { matricNumber } = req.body;
+  if (!matricNumber) {
     res.json({
-      auth: true,
-      data: studentToken,
+      auth: false,
+      message: "You must assign a MATRIC NUMBER to a token",
     });
-  });
+  } else {
+    const studentToken = randomString
+      .generate({
+        charset: "alphanumeric",
+        length: 16,
+      })
+      .toUpperCase();
+
+    const token = new Token({
+      id: studentToken,
+      token: studentToken,
+      valid: true,
+      matricNumber,
+    });
+    token.save().then(() => {
+      console.log("Token successfully saved!");
+      res.json({
+        auth: true,
+        data: studentToken,
+      });
+    });
+  }
 });
 Router.get("/admin/supervisor/key/generate", verifyJWT, (req, res) => {
   const supervisorKey = randomString

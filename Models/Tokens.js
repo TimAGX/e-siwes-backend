@@ -6,6 +6,7 @@ const tokenSchema = new Schema({
   id: String,
   token: String,
   valid: Boolean,
+  matricNumber: String,
 });
 
 const Token = mongoose.model("Token", tokenSchema);

@@ -87,7 +87,7 @@ Router.post("/student/register", async (req, res) => {
         });
       } else {
         // Check if token is valid
-        if (tokenInDB.valid) {
+        if (tokenInDB.valid && tokenInDB.matricNumber === matricNumber) {
           const student = new Student({
             id: studentID,
             firstName,
@@ -129,7 +129,7 @@ Router.post("/student/register", async (req, res) => {
           // Token is in DB but is not valid
           res.json({
             auth: false,
-            message: "Token is expired",
+            message: "Token is expired or invalid",
           });
         }
       }
