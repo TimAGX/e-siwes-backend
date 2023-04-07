@@ -147,7 +147,8 @@ Router.post("/student/login", async (req, res) => {
     });
   } else {
     const student = await Student.findOne({
-      $or: [{ email }, { matricNumber: email }],
+      // $or: [{ email }, { matricNumber: email }],
+      matricNumber: email,
     });
     if (student === null) {
       res.json({
@@ -324,6 +325,23 @@ Router.post("/student/password/update", verifyJWT, async (req, res) => {
           message: "An error occured",
         });
       });
+  }
+});
+
+Router.get("/student/auth/validate", verifyJWT, async (req, res) => {
+  const studentID = req.studentID;
+
+  const student = Student.findOne({ id: studentID });
+  if (student === null) {
+    res.json({
+      auth: false,
+      message: "Student is not authorized",
+    });
+  } else {
+    res.json({
+      auth: true,
+      message: "Student is a welcome user",
+    });
   }
 });
 module.exports = Router;

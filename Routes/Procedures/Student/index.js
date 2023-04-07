@@ -33,4 +33,38 @@ Router.get("/student/receipts", verifyJWT, async (req, res) => {
     data: AllStudentReceipts,
   });
 });
+
+Router.post("/student/payment/confirm", verifyJWT, async (req, res) => {
+  const { studentID } = req.body;
+
+  if (!studentID) {
+    res.json({
+      auth: false,
+      message: "Please provide a student ID",
+    });
+  } else {
+    // Create Student Receipt
+    const receipt = new Receipt({
+      id: randomString
+        .generate({ charset: "alphanumeric", length: 12 })
+        .concat(Date.now().toString())
+        .toUpperCase(),
+      studentID,
+      date: Date.now(),
+      amount: 2000,
+      paid: true,
+    });
+
+    receipt.save().then(() => {
+      Student.updateOne({ id: studentID }, { $set: { hasPaid: true } }).then(
+        () => {
+          res.json({
+            auth: true,
+            message: "Payment Successful",
+          });
+        }
+      );
+    });
+  }
+});
 module.exports = Router;
