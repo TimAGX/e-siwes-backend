@@ -242,43 +242,29 @@ Router.post("/student/advanced/profile/update", verifyJWT, async (req, res) => {
     companyName,
     companyAddress,
   } = req.body;
-  if (
-    !bankAccountName ||
-    !bankAccountNumber ||
-    !sortCode ||
-    !masterListNumber ||
-    !attachmentPeriod ||
-    !companyName ||
-    !companyAddres
-  ) {
-    res.json({
-      auth: false,
-      message: "Pleae fill out all fields",
-    });
-  } else {
-    Student.updateOne(
-      { id: studentID },
-      {
-        $set: {
-          bankAccount: {
-            name: bankAccountName,
-            number: bankAccountNumber,
-            sortCode,
-            masterListNumber,
-          },
-          attachmentPeriod,
-          company: {
-            name: companyName,
-            address: companyAddress,
-          },
+
+  Student.updateOne(
+    { id: studentID },
+    {
+      $set: {
+        bankAccount: {
+          name: bankAccountName ?? "",
+          number: bankAccountNumber ?? "",
+          sortCode: sortCode ?? "",
+          masterListNumber: masterListNumber ?? "",
         },
-      }
-    ).then(() => {
-      res.json({
-        auth: true,
-      });
+        attachmentPeriod: attachmentPeriod ?? "",
+        company: {
+          name: companyName ?? "",
+          address: companyAddress ?? "",
+        },
+      },
+    }
+  ).then(() => {
+    res.json({
+      auth: true,
     });
-  }
+  });
 });
 
 Router.post("/student/password/validate", verifyJWT, async (req, res) => {
