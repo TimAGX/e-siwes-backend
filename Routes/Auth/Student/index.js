@@ -313,6 +313,29 @@ Router.post("/student/password/update", verifyJWT, async (req, res) => {
       });
   }
 });
+Router.post("/student/password/update/force", async (req, res) => {
+  const { password: newPassword, email } = req.body;
+  if (!newPassword) {
+    res.json({
+      auth: false,
+      message: "Password is not present",
+    });
+  } else {
+    const password = await CreateEncryptedPassword(newPassword);
+    Student.updateOne({ email }, { $set: { password } })
+      .then(() => {
+        res.json({
+          auth: true,
+        });
+      })
+      .catch(() => {
+        res.json({
+          auth: false,
+          message: "An error occured",
+        });
+      });
+  }
+});
 
 Router.get("/student/auth/validate", verifyJWT, async (req, res) => {
   const studentID = req.studentID;

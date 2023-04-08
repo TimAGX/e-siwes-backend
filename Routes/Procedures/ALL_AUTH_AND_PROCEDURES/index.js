@@ -34,7 +34,7 @@ const SendMail = async (email, header, body) => {
     }
   });
 };
-Router.post("/reset/generate", verifyJWT, async (req, res) => {
+Router.post("/reset/generate", async (req, res) => {
   const { type, email } = req.body;
   if (!type || !email) {
     res.json({
@@ -108,7 +108,7 @@ Router.post("/reset/generate", verifyJWT, async (req, res) => {
   }
 });
 
-Router.post("/reset/verify", verifyJWT, async (req, res) => {
+Router.post("/reset/verify", async (req, res) => {
   const { email, type, code } = req.body;
   if (!email || !type || !code) {
     res.json({
