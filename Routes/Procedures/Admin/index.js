@@ -5,9 +5,102 @@ const Student = require("../../../Models/Students");
 const Supervisor = require("../../../Models/Supervisors");
 const Token = require("../../../Models/Tokens");
 const { signAdminJWT, verifyJWT } = require("../../../Modules/WebTokenAuth");
-
+const nodemailer = require("nodemailer");
+const Year = require("../../../Models/Years");
+const { createTransport } = nodemailer;
 const Router = express.Router();
+const SendMail = async (email, header, body) => {
+  const transporter = createTransport({
+    service: "gmail",
+    auth: {
+      user: "mcphersonsiwes@gmail.com",
+      pass: "hyzidtubmxdamski",
+    },
+  });
+  const mailOptions = {
+    from: "mcphersonsiwes@gmail.com",
+    to: email,
+    subject: header,
+    text: body,
+  };
+  transporter.sendMail(mailOptions, function (error, info) {
+    if (error) {
+      console.log(error);
+      return error;
+    } else {
+      console.log("Email sent:", info.response);
+    }
+  });
+};
 
+Router.post("/admin/year/obtain", verifyJWT, async (req, res) => {
+  const { year } = req.body;
+  if (!year) {
+    const currentYear = await Year.find({ current: true });
+
+    res.json({
+      auth: true,
+      data: currentYear,
+      message: "Current Year found!",
+    });
+  } else {
+    const yearExists = await Year.findOne({ year });
+    if (yearExists !== null) {
+      res.json({
+        auth: true,
+        message: "Year found!",
+        data: yearExists,
+      });
+    } else {
+      const newYear = new Year({
+        id: year,
+        year,
+        current: true,
+      });
+      newYear.save().then((yearDoc) => {
+        res.json({
+          auth: true,
+          data: yearDoc,
+          message: "Year successfully saved",
+        });
+      });
+    }
+  }
+});
+Router.post("/admin/year/terminate", verifyJWT, async (req, res) => {
+  const { year } = req.body;
+  if (!year) {
+    res.json({
+      auth: false,
+      message: "Provide a bleeding year!",
+    });
+  } else {
+    const yearExists = await Year.findOne({ year });
+    if (yearExists !== null) {
+      res.json({
+        auth: false,
+        message: "Year already exists!",
+      });
+    } else {
+      const newYear = new Year({
+        id: year,
+        year,
+        current: true,
+      });
+      newYear.save().then(() => {
+        Student.updateMany(
+          { current: true },
+          { $set: { current: false, yearOfStudy: year } }
+        ).then(() => {
+          res.json({
+            auth: true,
+            message: "Year successfully terminated",
+          });
+        });
+      });
+    }
+  }
+});
 Router.post("/admin/student/token/generate", verifyJWT, (req, res) => {
   const { matricNumber } = req.body;
   if (!matricNumber) {
@@ -62,7 +155,7 @@ Router.get("/admin/supervisor/key/generate", verifyJWT, (req, res) => {
 });
 
 Router.get("/admin/students", verifyJWT, async (req, res) => {
-  const students = await Student.find();
+  const students = await Student.find({ current: true });
 
   res.json({
     data: students ? students : [],
@@ -188,6 +281,15 @@ Router.post("/admin/student/notification/send", verifyJWT, async (req, res) => {
     const notificationID = randomString.generate({
       charset: "alphanumeric",
       length: 20,
+    });
+    const students = await Student.find({});
+    await students.map((student) => {
+      const sendStudentMail = SendMail(
+        student.email ?? "",
+        title ?? "",
+        body ?? ""
+      );
+      return sendStudentMail;
     });
     Student.updateMany(
       {},

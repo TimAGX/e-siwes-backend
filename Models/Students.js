@@ -10,6 +10,7 @@ const studentSchema = new Schema({
   phone: String,
   matricNumber: String,
   yearOfStudy: String,
+  current: Boolean,
   level: String,
   courseOfStudy: String,
   supervisor: String,

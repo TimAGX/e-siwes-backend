@@ -104,6 +104,7 @@ Router.post("/student/register", async (req, res) => {
               masterListNumber: "",
               name: "",
             },
+            current: true,
             yearOfStudy: "",
             level: "",
             courseOfStudy: "",
