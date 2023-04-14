@@ -36,33 +36,27 @@ const SendMail = async (email, header, body) => {
 Router.post("/admin/year/obtain", verifyJWT, async (req, res) => {
   const { year } = req.body;
   if (!year) {
-    const currentYear = await Year.find({ current: true });
-
     res.json({
-      auth: true,
+      auth: false,
       data: currentYear,
-      message: "Current Year found!",
+      message: "Provide a bleeding year!",
     });
   } else {
     const yearExists = await Year.findOne({ year });
     if (yearExists !== null) {
+      const yearStudents = await Student.find({
+        current: false,
+        yearOfStudy: year,
+      });
       res.json({
         auth: true,
         message: "Year found!",
-        data: yearExists,
+        data: { year: yearExists, students: yearStudents },
       });
     } else {
-      const newYear = new Year({
-        id: year,
-        year,
-        current: true,
-      });
-      newYear.save().then((yearDoc) => {
-        res.json({
-          auth: true,
-          data: yearDoc,
-          message: "Year successfully saved",
-        });
+      res.json({
+        auth: false,
+        message: "Year archive does not exist",
       });
     }
   }
@@ -100,6 +94,14 @@ Router.post("/admin/year/terminate", verifyJWT, async (req, res) => {
       });
     }
   }
+});
+Router.get("/archives/get", verifyJWT, async (req, res) => {
+  const pastYears = await Year.find();
+
+  res.json({
+    auth: true,
+    data: pastYears,
+  });
 });
 Router.post("/admin/student/token/generate", verifyJWT, (req, res) => {
   const { matricNumber } = req.body;
