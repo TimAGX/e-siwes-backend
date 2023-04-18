@@ -45,8 +45,16 @@ Router.post("/supervisor/key/validate", async (req, res) => {
 });
 
 Router.post("/supervisor/register", async (req, res) => {
-  const { email, password, key, firstName, lastName } = req.body;
-  if (!email || !password || !key || !firstName || !lastName) {
+  const { email, password, key, firstName, lastName, title, phone } = req.body;
+  if (
+    !email ||
+    !title ||
+    !firstName ||
+    !lastName ||
+    !key ||
+    !password ||
+    !phone
+  ) {
     res.json({
       auth: false,
       message: "Please fill all fields!",
@@ -78,16 +86,18 @@ Router.post("/supervisor/register", async (req, res) => {
             firstName,
             lastName,
             email,
-            phone: "",
+            title,
+            phone,
             password: encryptedPassword,
             isProfileComplete: false,
           });
 
           supervisor.save().then(() => {
-            Key.updateOne({ key }, { $set: { valid: false } });
-            res.json({
-              auth: true,
-              message: "Supervisor created successfully!",
+            Key.updateOne({ key }, { $set: { valid: false } }).then(() => {
+              res.json({
+                auth: true,
+                message: "Supervisor created successfully!",
+              });
             });
           });
         }
@@ -138,17 +148,30 @@ Router.post("/supervisor/login", async (req, res) => {
 
 Router.get("/supervisor/profile/:supervisorID", verifyJWT, async (req, res) => {
   const { supervisorID } = req.params;
-  const supervisor = await Supervisor.findOne({ id: supervisorID });
-  if (supervisor === null) {
+  if (supervisorID === "currentIsSupervisor") {
+    const currentSupervisorID = req.userID;
+    const supervisor = await Supervisor.findOne({ id: currentSupervisorID });
     res.json({
-      auth: false,
-      message: "Supervisor does not exist",
+      auth: supervisor !== null,
+      data: supervisor,
+      message:
+        supervisor !== null
+          ? "Supervisor found"
+          : "No Supervisor found matching ID",
     });
   } else {
-    res.json({
-      auth: true,
-      data: supervisor,
-    });
+    const supervisor = await Supervisor.findOne({ id: supervisorID });
+    if (supervisor === null) {
+      res.json({
+        auth: false,
+        message: "Supervisor does not exist",
+      });
+    } else {
+      res.json({
+        auth: true,
+        data: supervisor,
+      });
+    }
   }
 });
 
