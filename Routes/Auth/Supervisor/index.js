@@ -174,5 +174,102 @@ Router.get("/supervisor/profile/:supervisorID", verifyJWT, async (req, res) => {
     }
   }
 });
+Router.post("/supervisor/password/validate", verifyJWT, async (req, res) => {
+  const supervisorID = req.userID;
+  const { password } = req.body;
+
+  if (!password) {
+    res.json({
+      auth: false,
+      message: "Password is not present",
+    });
+  } else {
+    const supervisor = await Supervisor.findOne({ id: supervisorID });
+    const { password: supervisorPassword } = supervisor;
+
+    const isPasswordValid = await bcrypt.compare(password, supervisorPassword);
+
+    res.json({
+      auth: isPasswordValid,
+      message: isPasswordValid ? "Password is correct!" : "Incorrect password",
+    });
+  }
+});
+Router.post("/supervisor/password/update/force", async (req, res) => {
+  const { password: newPassword, email } = req.body;
+  if (!newPassword) {
+    res.json({
+      auth: false,
+      message: "Password is not present",
+    });
+  } else {
+    const password = await CreateEncryptedPassword(newPassword);
+    Supervisor.updateOne({ email }, { $set: { password } })
+      .then(() => {
+        res.json({
+          auth: true,
+        });
+      })
+      .catch(() => {
+        res.json({
+          auth: false,
+          message: "An error occured",
+        });
+      });
+  }
+});
+
+Router.post("/supervisor/password/update", verifyJWT, async (req, res) => {
+  const { password: newPassword } = req.body;
+  if (!newPassword) {
+    res.json({
+      auth: false,
+      message: "Password is not present",
+    });
+  } else {
+    const supervisorID = req.userID;
+    const password = await CreateEncryptedPassword(newPassword);
+    Supervisor.updateOne({ id: supervisorID }, { $set: { password } })
+      .then(() => {
+        res.json({
+          auth: true,
+        });
+      })
+      .catch(() => {
+        res.json({
+          auth: false,
+          message: "An error occured",
+        });
+      });
+  }
+});
+
+Router.post("/supervisor/profile/update", verifyJWT, async (req, res) => {
+  const supervisorID = req.userID;
+  const { email, firstName, lastName, phone, title } = req.body;
+  if (!email || !firstName || !lastName || !phone || !title) {
+    res.json({
+      auth: false,
+      message: "Pleazzze fill out all fields",
+    });
+  } else {
+    Supervisor.updateOne(
+      { id: supervisorID },
+      {
+        $set: {
+          email,
+          firstName,
+          lastName,
+          phone,
+          title,
+        },
+      }
+    ).then(() => {
+      res.json({
+        auth: true,
+      });
+    });
+  }
+});
 
 module.exports = Router;

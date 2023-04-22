@@ -32,5 +32,34 @@ app.get("/", (req, res) => {
 });
 mongoose.connect(DBURI).then((res) => {
   console.log("Connected: ", true);
+  const student = new Student({
+    id: "String",
+    firstName: "String",
+    lastName: "String",
+    email: "String",
+    password: "String",
+    phone: "String",
+    matricNumber: "String",
+    yearOfStudy: "String",
+    current: true,
+    level: "400",
+    courseOfStudy: "",
+    supervisor: "",
+    bankAccount: {
+      name: "",
+      number: "",
+      sortCode: "",
+      masterListNumber: "",
+    },
+    attachmentPeriod: "",
+    company: {
+      name: "",
+      address: "",
+    },
+    isProfileComplete: true,
+    hasPaid: true,
+    notifications: [],
+  });
+  // student.save();
   app.listen(PORT, () => console.log(`Server started on ${PORT}`));
 });

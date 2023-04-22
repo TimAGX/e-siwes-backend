@@ -25,4 +25,18 @@ Router.post("/supervisor/students", async (req, res) => {
     });
   }
 });
+Router.get("/supervisor/students/get", verifyJWT, async (req, res) => {
+  const supervisorID = req.userID;
+  console.log("Supervisor ID", supervisorID);
+  const students = await Student.find({
+    supervisor: supervisorID,
+    current: true,
+  });
+
+  res.json({
+    auth: true,
+    message: students === null ? "No students found" : "Students Found",
+    data: students,
+  });
+});
 module.exports = Router;
