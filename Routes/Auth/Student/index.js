@@ -8,7 +8,10 @@ const {
 } = require("../../../Modules/WebTokenAuth");
 const Token = require("../../../Models/Tokens");
 const Student = require("../../../Models/Students");
-const { CreateEncryptedPassword } = require("../../../Modules/AuthModule");
+const {
+  CreateEncryptedPassword,
+  GetBankName,
+} = require("../../../Modules/AuthModule");
 
 const Router = express.Router();
 
@@ -150,6 +153,7 @@ Router.post("/student/login", async (req, res) => {
     const student = await Student.findOne({
       // $or: [{ email }, { matricNumber: email }],
       matricNumber: email,
+      current: true,
     });
     if (student === null) {
       res.json({
@@ -249,7 +253,7 @@ Router.post("/student/advanced/profile/update", verifyJWT, async (req, res) => {
     {
       $set: {
         bankAccount: {
-          name: bankAccountName ?? "",
+          name: bankAccountName ? GetBankName(bankAccountName) : "",
           number: bankAccountNumber ?? "",
           sortCode: sortCode ?? "",
           masterListNumber: masterListNumber ?? "",
