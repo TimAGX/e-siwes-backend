@@ -314,4 +314,21 @@ Router.post("/admin/student/notification/send", verifyJWT, async (req, res) => {
   }
 });
 
+Router.post("/supervisor/delete", verifyJWT, (req, res) => {
+  const { supervisorID } = req.body;
+  if (!supervisorID) {
+    res.json({
+      auth: false,
+      message: "You must provide a Supervisor Unique ID",
+    });
+  } else {
+    Supervisor.deleteOne({ id: supervisorID }).then(() => {
+      res.json({
+        auth: true,
+        message: "Supervisor successfully deleted!",
+      });
+    });
+  }
+});
+
 module.exports = Router;
