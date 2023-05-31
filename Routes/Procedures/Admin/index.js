@@ -103,7 +103,7 @@ Router.get("/archives/get", verifyJWT, async (req, res) => {
     data: pastYears,
   });
 });
-Router.post("/admin/student/token/generate", verifyJWT, (req, res) => {
+Router.post("/admin/student/token/generate", verifyJWT, async (req, res) => {
   const { matricNumber } = req.body;
   if (!matricNumber) {
     res.json({
@@ -111,26 +111,43 @@ Router.post("/admin/student/token/generate", verifyJWT, (req, res) => {
       message: "You must assign a MATRIC NUMBER to a token",
     });
   } else {
-    const studentToken = randomString
-      .generate({
-        charset: "alphanumeric",
-        length: 16,
-      })
-      .toUpperCase();
+    const student = await Student.findOne({ matricNumber });
+    if (student) {
+      if (student.isAuthenticated) {
+        res.json({
+          auth: false,
+          message: "Student is already authenticated",
+        });
+      } else {
+        const studentToken = randomString
+          .generate({
+            charset: "alphanumeric",
+            length: 16,
+          })
+          .toUpperCase();
 
-    const token = new Token({
-      id: studentToken,
-      token: studentToken,
-      valid: true,
-      matricNumber,
-    });
-    token.save().then(() => {
-      console.log("Token successfully saved!");
-      res.json({
-        auth: true,
-        data: studentToken,
-      });
-    });
+        const token = new Token({
+          id: studentToken,
+          token: studentToken,
+          valid: true,
+          matricNumber,
+        });
+        token.save().then(() => {
+          const sendStudentMail = SendMail(
+            student.email,
+            "Your Student E-SIWES Portal Token",
+            `Your student token is:${studentToken}. This token is bound to your matric number: ${matricNumber} and cannot be used to activate another student account`
+          ).then(() => {
+            res.json({
+              auth: true,
+              data: studentToken,
+            });
+          });
+          console.log(sendStudentMail);
+          console.log("Token successfully saved!");
+        });
+      }
+    }
   }
 });
 Router.get("/admin/supervisor/key/generate", verifyJWT, (req, res) => {
