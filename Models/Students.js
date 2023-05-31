@@ -12,6 +12,7 @@ const studentSchema = new Schema({
   yearOfStudy: String,
   current: Boolean,
   level: String,
+  college: String,
   courseOfStudy: String,
   supervisor: String,
   bankAccount: {
@@ -26,6 +27,7 @@ const studentSchema = new Schema({
     address: String,
   },
   isProfileComplete: Boolean,
+  isAuthenticated: Boolean,
   hasPaid: Boolean,
   notifications: [{ isOpen: Boolean, title: String, body: String, id: String }],
 });

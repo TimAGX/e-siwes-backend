@@ -15,8 +15,10 @@ const {
 
 const Router = express.Router();
 
-Router.post("/student/token/validate", async (req, res) => {
+Router.post("/student/token/validate", verifyJWT, async (req, res) => {
   const { token: studentToken } = req.body;
+  const studentID = req.userID;
+
   if (!studentToken) {
     res.json({
       auth: false,
@@ -37,9 +39,14 @@ Router.post("/student/token/validate", async (req, res) => {
           message: "Token is not valid",
         });
       } else {
-        res.json({
-          auth: true,
-          data: token,
+        Student.updateOne(
+          { id: studentID },
+          { $set: { isAuthenticated: true } }
+        ).then(() => {
+          res.json({
+            auth: true,
+            message: "Student is authenticated!",
+          });
         });
       }
     }
@@ -47,12 +54,12 @@ Router.post("/student/token/validate", async (req, res) => {
 });
 
 Router.post("/student/register", async (req, res) => {
-  const { email, password, token, firstName, lastName, matricNumber, phone } =
+  const { email, password, college, firstName, lastName, matricNumber, phone } =
     req.body;
   if (
     !email ||
     !password ||
-    !token ||
+    !college ||
     !firstName ||
     !lastName ||
     !phone ||
@@ -82,63 +89,50 @@ Router.post("/student/register", async (req, res) => {
         charset: "alphanumeric",
         length: 24,
       });
-      const tokenInDB = await Token.findOne({ token });
-      // Check if token is in DB
-      if (tokenInDB === null) {
-        res.json({
-          auth: false,
-          message: "Student Token is not valid",
-        });
-      } else {
-        // Check if token is valid
-        if (tokenInDB.valid && tokenInDB.matricNumber === matricNumber) {
-          const student = new Student({
-            id: studentID,
-            firstName,
-            lastName,
-            email,
-            password: encryptedPassword,
-            phone,
-            matricNumber,
-            supervisor: "",
-            bankAccount: {
-              number: "",
-              sortCode: "",
-              masterListNumber: "",
-              name: "",
-            },
-            current: true,
-            yearOfStudy: "",
-            level: "",
-            courseOfStudy: "",
-            attachmentPeriod: "",
-            company: {
-              name: "",
-              address: "",
-            },
-            isProfileComplete: false,
-            hasPaid: false,
-            notifications: [],
-          });
 
-          student.save().then(() => {
-            Token.updateOne({ token }, { $set: { valid: false } }).then(() => {
-              const JWT_Token = signStudentJWT(studentID);
-              res.json({
-                auth: true,
-                message: "Student created successfully!",
-                data: JWT_Token,
-              });
-            });
-          });
-        } else {
-          // Token is in DB but is not valid
-          res.json({
-            auth: false,
-            message: "Token is expired or invalid",
-          });
-        }
-      }
+      // Check if token is in DB
+
+      // Check if token is valid
+
+      const student = new Student({
+        id: studentID,
+        firstName,
+        lastName,
+        email,
+        college,
+        password: encryptedPassword,
+        phone,
+        matricNumber,
+        supervisor: "",
+        bankAccount: {
+          number: "",
+          sortCode: "",
+          masterListNumber: "",
+          name: "",
+        },
+        current: true,
+        yearOfStudy: "",
+        level: "",
+        courseOfStudy: "",
+        attachmentPeriod: "",
+        company: {
+          name: "",
+          address: "",
+        },
+        isProfileComplete: false,
+        isAuthenticated: false,
+        hasPaid: false,
+        notifications: [],
+      });
+
+      student.save().then(() => {
+        const JWT_Token = signStudentJWT(studentID);
+        res.json({
+          auth: true,
+          message: "Student created successfully!",
+          data: JWT_Token,
+        });
+      });
     }
   }
 });
@@ -343,9 +337,10 @@ Router.post("/student/password/update/force", async (req, res) => {
 });
 
 Router.get("/student/auth/validate", verifyJWT, async (req, res) => {
-  const studentID = req.studentID;
+  const studentID = req.userID;
 
-  const student = Student.findOne({ id: studentID });
+  const student = await Student.findOne({ id: studentID });
+  console.log(student);
   if (student === null) {
     res.json({
       auth: false,
@@ -354,6 +349,10 @@ Router.get("/student/auth/validate", verifyJWT, async (req, res) => {
   } else {
     res.json({
       auth: true,
+      data: {
+        isProfileComplete: student.isProfileComplete,
+        isAuthenticated: student.isAuthenticated,
+      },
       message: "Student is a welcome user",
     });
   }
