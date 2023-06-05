@@ -1,7 +1,9 @@
 const express = require("express");
 const randomString = require("randomstring");
+const Comment = require("../../../Models/Comments");
 const Receipt = require("../../../Models/Receipts");
 const Student = require("../../../Models/Students");
+const Supervisor = require("../../../Models/Supervisors");
 const Token = require("../../../Models/Tokens");
 const { COLNAS_COURSES, COSMAS_COURSES, COLMED_COURSES } = require("../../../Modules/CoursesModule");
 const { signAdminJWT, verifyJWT } = require("../../../Modules/WebTokenAuth");
@@ -63,7 +65,6 @@ Router.post("/student/payment/confirm", verifyJWT, async (req, res) => {
     });
   }
 });
-module.exports = Router;
 
 Router.post("/student/courses/get", verifyJWT, async (req, res) => {
   let { college } = req.body;
@@ -85,3 +86,59 @@ Router.post("/student/courses/get", verifyJWT, async (req, res) => {
     });
   }
 });
+Router.get("/student/supervisor/get", verifyJWT, async (req, res) => {
+  const studentID = req.userID;
+
+  const student = await Student.findOne({ id: studentID });
+  const supervisor = await Supervisor.findOne({ id: student ? student.supervisor : "" });
+
+  res.json({
+    auth: supervisor ? true : false,
+    data: supervisor,
+  });
+});
+
+Router.post("/student/comment", verifyJWT, async (req, res) => {
+  const { supervisorID, comment } = req.body;
+
+  if (!supervisorID || !comment) {
+    res.json({
+      auth: false,
+      message: "Please provide a supervisor and a comment to send",
+    });
+  } else {
+    const studentID = req.userID;
+    const t = randomString.generate({
+      charset: "alphanumeric",
+      length: 12,
+    });
+    const student = await Student.findOne({ id: studentID });
+    const supervisor = await Supervisor.findOne({ id: supervisorID });
+    const newComment = new Comment({
+      id: t,
+      supervisor: supervisorID,
+      student: studentID,
+      comment,
+      studentName: `${student.firstName} ${student.lastName}`,
+      supervisorName: `${supervisor.title} ${supervisor.firstName} ${supervisor.lastName}`,
+      sender: "student",
+    });
+    newComment.save().then(() => {
+      res.json({
+        auth: true,
+        message: "Comment successfully saved!",
+      });
+    });
+  }
+});
+Router.post("/student/comments/all", verifyJWT, async (req, res) => {
+  const { supervisorID } = req.body;
+  const studentID = req.userID;
+
+  const c = await Comment.find({ supervisor: supervisorID, student: studentID });
+  res.json({
+    auth: c ? true : false,
+    data: c,
+  });
+});
+module.exports = Router;

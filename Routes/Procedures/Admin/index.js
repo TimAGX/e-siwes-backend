@@ -82,10 +82,7 @@ Router.post("/admin/year/terminate", verifyJWT, async (req, res) => {
         current: true,
       });
       newYear.save().then(() => {
-        Student.updateMany(
-          { current: true },
-          { $set: { current: false, yearOfStudy: year } }
-        ).then(() => {
+        Student.updateMany({ current: true }, { $set: { current: false, yearOfStudy: year } }).then(() => {
           res.json({
             auth: true,
             message: "Year successfully terminated",
@@ -218,33 +215,23 @@ Router.post("/admin/supervisor/student/assign", verifyJWT, async (req, res) => {
       const { students } = supervisor;
 
       const AddStudent = () => {
-        Supervisor.updateMany({}, { $pull: { students: { studentID } } }).then(
-          () => {
-            Student.updateOne(
-              { id: studentID },
-              { $set: { supervisor: supervisorID } }
-            ).then(() => {
-              Supervisor.updateOne(
-                { id: supervisorID },
-                { $push: { students: { studentID: studentID } } }
-              ).then(() => {
-                res.json({
-                  auth: true,
-                  message: "Student assigned to supervisor",
-                  data: null,
-                });
+        Supervisor.updateMany({}, { $pull: { students: { studentID } } }).then(() => {
+          Student.updateOne({ id: studentID }, { $set: { supervisor: supervisorID } }).then(() => {
+            Supervisor.updateOne({ id: supervisorID }, { $push: { students: { studentID: studentID } } }).then(() => {
+              res.json({
+                auth: true,
+                message: "Student assigned to supervisor",
+                data: null,
               });
             });
-          }
-        );
+          });
+        });
       };
       if (!students) {
         // Supervisor has no students so add student
         AddStudent();
       } else {
-        let isStudentInSupervisor = students.filter(
-          (s) => s.studentID === student.id
-        );
+        let isStudentInSupervisor = students.filter((s) => s.studentID === student.id);
         if (isStudentInSupervisor.length === 0) {
           // Student HAS NOT been assigned to supervisor so add student
           AddStudent();
@@ -277,18 +264,13 @@ Router.post("/admin/supervisor/student/remove", verifyJWT, async (req, res) => {
         message: "Student or Supervisor is invalid",
       });
     } else {
-      Supervisor.updateOne(
-        { id: supervisorID },
-        { $pull: { students: { studentID } } }
-      ).then(() => {
-        Student.updateOne({ id: studentID }, { $set: { supervisor: "" } }).then(
-          () => {
-            res.json({
-              auth: true,
-              message: "Student successfully removed!",
-            });
-          }
-        );
+      Supervisor.updateOne({ id: supervisorID }, { $pull: { students: { studentID } } }).then(() => {
+        Student.updateOne({ id: studentID }, { $set: { supervisor: "" } }).then(() => {
+          res.json({
+            auth: true,
+            message: "Student successfully removed!",
+          });
+        });
       });
     }
   }
@@ -308,11 +290,7 @@ Router.post("/admin/student/notification/send", verifyJWT, async (req, res) => {
     });
     const students = await Student.find({});
     await students.map((student) => {
-      const sendStudentMail = SendMail(
-        student.email ?? "",
-        title ?? "",
-        body ?? ""
-      );
+      const sendStudentMail = SendMail(student.email ?? "", title ?? "", body ?? "");
       return sendStudentMail;
     });
     Student.updateMany(
