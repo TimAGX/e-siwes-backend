@@ -3,6 +3,7 @@ const randomString = require("randomstring");
 const Receipt = require("../../../Models/Receipts");
 const Student = require("../../../Models/Students");
 const Token = require("../../../Models/Tokens");
+const { COLNAS_COURSES, COSMAS_COURSES, COLMED_COURSES } = require("../../../Modules/CoursesModule");
 const { signAdminJWT, verifyJWT } = require("../../../Modules/WebTokenAuth");
 
 const Router = express.Router();
@@ -45,10 +46,7 @@ Router.post("/student/payment/confirm", verifyJWT, async (req, res) => {
   } else {
     // Create Student Receipt
     const receipt = new Receipt({
-      id: randomString
-        .generate({ charset: "alphanumeric", length: 12 })
-        .concat(Date.now().toString())
-        .toUpperCase(),
+      id: randomString.generate({ charset: "alphanumeric", length: 12 }).concat(Date.now().toString()).toUpperCase(),
       studentID,
       date: Date.now(),
       amount: 2000,
@@ -56,15 +54,34 @@ Router.post("/student/payment/confirm", verifyJWT, async (req, res) => {
     });
 
     receipt.save().then(() => {
-      Student.updateOne({ id: studentID }, { $set: { hasPaid: true } }).then(
-        () => {
-          res.json({
-            auth: true,
-            message: "Payment Successful",
-          });
-        }
-      );
+      Student.updateOne({ id: studentID }, { $set: { hasPaid: true } }).then(() => {
+        res.json({
+          auth: true,
+          message: "Payment Successful",
+        });
+      });
     });
   }
 });
 module.exports = Router;
+
+Router.post("/student/courses/get", verifyJWT, async (req, res) => {
+  let { college } = req.body;
+
+  if (!college) {
+    res.json({
+      auth: false,
+      message: "Please provide a college",
+    });
+  } else {
+    college = college.toUpperCase();
+    const getCourses = () => {
+      return college === "COLNAS" ? COLNAS_COURSES : college === "COSMAS" ? COSMAS_COURSES : COLMED_COURSES;
+    };
+
+    res.json({
+      auth: true,
+      data: getCourses(),
+    });
+  }
+});
