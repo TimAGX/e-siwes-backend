@@ -147,6 +147,11 @@ Router.post("/admin/student/token/generate", verifyJWT, async (req, res) => {
           console.log("Token successfully saved!");
         });
       }
+    } else {
+      res.json({
+        auth: false,
+        message: "Student does not exist!",
+      });
     }
   }
 });
